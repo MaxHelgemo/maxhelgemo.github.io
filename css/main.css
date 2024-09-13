@@ -1,0 +1,63 @@
+@font-face {
+    font-family: "Terminal";
+    src: url(../fonts/terminal-grotesque_open.otf);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    background-color: cornflowerblue;
+    background-image: url(../images/background-wallpaper.png);
+    image-rendering: pixelated;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: auto;
+}
+
+.window {
+    display: flex;
+    flex-direction: column;
+    background-color: aliceblue;
+    max-width: 50%;
+    min-width: 25%;
+    margin: 2rem;
+    border-style: ridge;
+}
+
+.windowX {
+    display: flex;
+    min-width: 1rem;
+    max-height: 1rem;
+    background-color: coral;
+    align-content: center;
+    justify-content: center;
+    font-family: "Terminal";
+}
+
+.topBar {
+    display: flex;
+    flex-direction: row;
+    background-color: antiquewhite;
+    max-height: fit-content;
+    align-content: center;
+    justify-content: flex-start;
+    border-style: groove;
+}
+
+.windowContent {
+    max-width: 100%;
+    padding: 1rem;
+    min-height: 10rem;
+    text-align: center;
+    justify-content: center;
+    border-style: groove;
+}
+
+.decorativeImage {
+    position: absolute;
+    bottom: 1rem;
+    float: right;
+    z-index: -1;
+}
