@@ -5,37 +5,68 @@
         <title>maxhelgemo</title>
         <link rel="stylesheet" type="text/css" href="css/main.css">
         <link rel="icon" type="img/png" href="images/favicon.png">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <script src="https://unpkg.com/draggabilly@3/dist/draggabilly.pkgd.min.js"></script>
     </head>
 
     <body>
-        <div class="window" style="margin-left: 0;">
-            <div class="topBar">
-                <div class="windowX">X</div>
+        <!--Music Links Window-->
+        <div class="window draggable" id="w1">
+            <div class="windowBar">
+                <span class="close">X</span>
                 &nbsp; <p>maxhelgemo.com</p>
             </div>
             <div class="windowContent">
-                <p>Congratulations! You are the 100th visitor!</p>
-                <p><a href="index.html">Click Here</a> to claim your prize!~</p>
+                <a href="https://open.spotify.com/user/maxhelgemo"><p>Click here to listen to my music!</p></a>
             </div>
         </div>
 
-            <img style="display: flex; max-width: 25%; align-self: flex-end; margin-right: 3rem;" src="images/spray-line.png">
+            <img src="images/spray-line.png" style="
+            max-width: 100%;
+            max-height: fit-content;
+            z-index: -1;
+            position: absolute;
+            top: 14rem;
+            left: 1rem;">
 
-        <div class="window" style="margin-top: 0; align-self: center;">
-            <div class="topBar">
-                <div class="windowX">X</div>
-                &nbsp; <p>links</p>
+        <!--Production Links Window-->
+        <div class="window draggable" id="w2">
+            <div class="windowBar">
+                <div class="close">X</div>
+                &nbsp; <p>Production and Mixing</p>
             </div>
             <div class="windowContent">
-                <p>Insert Links Here</p>
-                <p>Insert Links Here</p>
-                <p>Insert Links Here</p>
+                <a href="https://open.spotify.com/playlist/2FtmG7KHD0XMLyg2umUush?si=Y-BCH5jGTGi8AnVGuabWHg&pi=u-GrIQPG-OSvyk&nd=1&dlsi=b7f4619e3ac9487a"><p>Click here to stream music I've produced/mixed.</p></a>
             </div>
         </div>
 
-        <div class="decorativeImage">
-            <img src="images/spray-sun.png" style="max-width: 50%;">
+        <img src="images/max-spinning-room.gif" style="
+        position: absolute;
+        left: 2rem;
+        bottom: 2rem;
+        max-width: 25rem;
+        z-index: -1;
+        padding: 1rem;">
+    
+        <!--Contact Links Window-->
+        <div class="window draggable" id="w3">
+            <div class="windowBar">
+                <div class="close">X</div>
+                &nbsp; <p>Links</p>
+            </div>
+            <div class="windowContent">
+                <a href="mailto: maxhelgemo@gmail.com"><p>maxhelgemo@gmail.com</p></a>
+                <a href="https://www.instagram.com/maxhelgemo/"><p>Instagram</p></a>
+            </div>    
         </div>
 
+        <img src="images/spray-sun.png" style="
+        max-width: 5rem;
+        max-height: fit-content;
+        z-index: -2;
+        position: absolute;
+        top: 1rem;">
+
+        <script src="init.js"></script>
     </body>
 </html>

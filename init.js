@@ -1,0 +1,3 @@
+var $draggable = $('.draggable').draggabilly({
+    // options...
+  })
