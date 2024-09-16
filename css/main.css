@@ -18,6 +18,18 @@ body {
 p {
     margin-top: 0;
     margin-bottom: auto;
+    position: relative;
+    z-index: 3;
+}
+
+a {
+    position: relative;
+    z-index: 3;
+}
+
+.draggable {
+    position: relative;
+    z-index: 1;
 }
 
 .window {
@@ -37,6 +49,7 @@ p {
     border-style: groove;
     cursor: grab;
     text-align: center;
+    z-index: 0;
 }
 
 .close {
