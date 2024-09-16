@@ -59,7 +59,6 @@ p {
 
 .windowContent {
     display: block;
-    touch-action: none;
     min-width: fit-content;
     min-height: fit-content;
     max-height: min-content;
