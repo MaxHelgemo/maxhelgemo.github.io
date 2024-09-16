@@ -20,13 +20,13 @@ p {
     margin-bottom: auto;
 }
 
-.draggable {
+/* .draggable {
     min-width: fit-content;
     min-height: fit-content;
     max-width: min-content;
     max-height: min-content;
     z-index: 1;
-}
+} */
 
 .window {
     display: block;
