@@ -69,6 +69,7 @@ p {
     text-align: center;
     justify-content: center;
     border-style: groove;
+    z-index: 2;
 }
 
 #w1 {
