@@ -38,7 +38,6 @@ p {
 
 .windowBar {
     display: flex;
-    touch-action: none;
     position: relative;
     max-width: 100%;
     background-color: #f8f6f5;
