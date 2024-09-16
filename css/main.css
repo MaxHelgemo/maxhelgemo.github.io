@@ -1,6 +1,16 @@
 @font-face {
     font-family: "Terminal";
-    src: url(../fonts/terminal-grotesque_open.otf);
+    src: url(../fonts/terminal-grotesque.ttf);
+}
+
+@font-face {
+    font-family: "b-base";
+    src: url(../fonts/bianzhidai_noBG-Base.otf);
+}
+
+@font-face {
+    font-family: "Steps";
+    src: url(../fonts/Steps-Mono.otf)
 }
 
 body {
@@ -13,19 +23,36 @@ body {
     background-image: url(../images/background-wallpaper.png);
     image-rendering: pixelated;
     text-align: center;
+    overflow-x: hidden;
+}
+
+h1 {
+    font-family: "b-base";
+    font-size: small;
+    margin: 0px;
 }
 
 p {
-    margin-top: 0;
-    margin-bottom: auto;
+    font-family: "Steps";
+    font-size: small;
+    margin: auto;
 }
 
-a {
-    position: relative;
+footer {
+    display: block;
+    position: absolute;
+    z-index: -1;
+    margin: 0px;
+    bottom: 1rem;
+    left: 1rem;
 }
 
 .draggable {
     position: relative;
+}
+
+.windowsArea {
+    max-width: 100%;
 }
 
 .window {
@@ -43,15 +70,16 @@ a {
     background-color: #f8f6f5;
     border-style: groove;
     cursor: grab;
-    text-align: center;
+    align-items: center;
+    justify-content: center;
 }
 
 .close {
-    max-width: 1rem;
-    max-height: 1rem;
-    float: left;
-    padding: 3px;
-    text-align: center;
+    display: block;
+    position: absolute;
+    left: 0rem;
+    width: 20px;
+    height: 100%;
     background-color: #e16704;
     font-family: "Terminal";
 }
@@ -75,7 +103,7 @@ a {
 #w1 {
     display: block;
     position: relative;
-    left: 4rem;
+    left: 3rem;
     width: 75%;
     min-width: fit-content;
     max-width: 768px;
