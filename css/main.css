@@ -13,6 +13,21 @@
     src: url(../fonts/Steps-Mono.otf)
 }
 
+@font-face {
+    font-family: "Array";
+    src: url(../fonts/Array-Wide.otf);
+}
+
+@font-face {
+    font-family: "Nippo";
+    src: url(../fonts/Nippo-Light.otf);
+}
+
+@font-face {
+    font-family: "Orbitron";
+    src: url(../fonts/Orbitron\ Medium.otf);
+}
+
 body {
     margin: 1rem;
     max-width: 100vw;
@@ -27,14 +42,14 @@ body {
 }
 
 h1 {
-    font-family: "b-base";
-    font-size: small;
+    font-family: "Terminal";
+    font-size: large;
     margin: 0px;
 }
 
 p {
-    font-family: "Steps";
-    font-size: small;
+    font-family: "Nippo";
+    font-size: smaller;
     margin: auto;
 }
 
@@ -82,6 +97,11 @@ footer {
     height: 100%;
     background-color: #e16704;
     font-family: "Terminal";
+}
+
+.close:hover {
+    background-color: chartreuse;
+    content:url(../images/100470.png)
 }
 
 .windowContent {
