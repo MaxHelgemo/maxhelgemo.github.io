@@ -137,23 +137,24 @@ footer {
     display: block;
     position: relative;
     left: 3rem;
-    max-width: 75%;
+    max-width: 10%;
     min-width: fit-content;
 }
 
 #w2 {
     display: block;
     position: relative;
-    top: 2rem;
-    max-width: 75%;
+    top: 1rem;
+    left: 4rem;
+    max-width: 10%;
     min-width: fit-content;
 }
 
 #w3 {
     display: block;
     position: relative;
-    top: 4rem;
-    left: 2rem;
-    max-width: 25%;
+    top: 3rem;
+    left: 1rem;
+    max-width: 10%;
     min-width: fit-content;
 }
