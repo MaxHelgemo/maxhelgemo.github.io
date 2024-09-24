@@ -1,4 +1,4 @@
-@font-face {
+er@font-face {
     font-family: "Terminal";
     src: url(../fonts/terminal-grotesque.ttf);
 }
@@ -100,7 +100,7 @@ footer {
     background-color: #f8f6f5;
     border-style: groove;
     cursor: grab;
-    align-items: left;
+    align-items: center;
     justify-content: center;
 }
 
