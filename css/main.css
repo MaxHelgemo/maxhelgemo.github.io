@@ -137,7 +137,7 @@ footer {
     display: block;
     position: relative;
     left: 5rem;
-    max-width: 1%;
+    max-width: 10%;
     min-width: fit-content;
 }
 
