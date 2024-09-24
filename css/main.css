@@ -100,7 +100,7 @@ footer {
     background-color: #f8f6f5;
     border-style: groove;
     cursor: grab;
-    align-items: center;
+    align-items: left;
     justify-content: center;
 }
 
@@ -127,7 +127,7 @@ footer {
     min-height: fit-content;
     max-height: min-content;
     background-color: #efe3d1;
-    padding: 0rem;
+    padding: 1rem;
     text-align: center;
     justify-content: center;
     border-style: groove;
