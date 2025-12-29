@@ -192,3 +192,26 @@ footer {
     max-width: 10%;
     min-width: 40%;
 }
+
+/* Production page window positioning */
+#production-window {
+    display: block;
+    position: relative;
+    top: 5rem;
+    left: 5rem;
+    width: fit-content;
+    min-width: 200px;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    #production-window {
+        top: 2rem;
+        left: 2rem;
+        min-width: 150px;
+    }
+    
+    .window {
+        max-width: calc(100vw - 2rem);
+    }
+}
