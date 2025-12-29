@@ -29,15 +29,15 @@
 }
 
 body {
-    margin: 1rem;
-    max-width: 100vw;
-    max-height: 100vh;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background-color: cornflowerblue;
-    background-image: url(../images/background-wallpaper.png);
-    image-rendering: pixelated;
-    text-align: center;
+    background-color: #f8f6f5;
+    text-align: left;
     overflow-x: hidden;
 }
 
@@ -80,9 +80,10 @@ footer {
 
 .windowsArea {
     display: block;
-    margin: 0;
-    width: 100%;
-    height: 100%;
+    margin: 1rem;
+    width: calc(100% - 2rem);
+    height: calc(100% - 2rem);
+    position: relative;
 }
 
 .window {
@@ -91,6 +92,7 @@ footer {
     border-style: ridge;
     box-shadow: 4px 4px black;
     margin-top: 4%;
+    z-index: 10;
 }
 
 .windowBar {
@@ -128,7 +130,7 @@ footer {
     max-height: min-content;
     background-color: #efe3d1;
     padding: 1rem;
-    text-align: center;
+    text-align: left;
     justify-content: center;
     border-style: groove;
 }
@@ -155,8 +157,31 @@ footer {
     position: relative;
     top: 3rem;
     left: 1rem;
-    max-width: 10%;
-    min-width: 40%;
+    width: fit-content;
+    min-width: 150px;
+}
+
+#w3 .windowContent {
+    text-align: center;
+    align-items: center;
+}
+
+#animation-svg {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 800px;
+    z-index: 1;
+    pointer-events: auto;
+    background-color: transparent;
+    cursor: grab;
+    user-select: none;
+}
+
+#animation-svg:active {
+    cursor: grabbing;
 }
 
 #w4 {

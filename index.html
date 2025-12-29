@@ -10,6 +10,7 @@
     </head>
 
     <body>
+        <svg id="animation-svg" xmlns="http://www.w3.org/2000/svg"></svg>
         <div class="windowsArea">
             <div class="window draggable" id="w1">
                 <div class="windowBar handle">
@@ -22,35 +23,17 @@
                 </div>
             </div>
 
-            <div class="window draggable" id="w4">
-                <div class="windowBar handle">
-                    <div class="close">X</div>
-                    &nbsp; <p style="font-size: medium; margin: 0;">'center of me'</p>
-                </div>
-                <div class="windowContent">
-                <a href="https://nfan.link/center-of-me"><img src="images/small3.png"></a>
-            </div>
-        </div>
-
-            <img src="images/spray-line.png" style="
-            max-width: 100%;
-            max-height: fit-content;
-            z-index: -1;
-            position: absolute;
-            top: 14rem;
-            right: 1rem;">
-
             <div class="window draggable" id="w2">
                 <div class="windowBar handle">
                     <div class="close">X</div>
                     &nbsp; <p style="font-size: medium; margin: 0;"></p>
                 </div>
                 <div class="windowContent">
-                    <a href="https://open.spotify.com/artist/25tISYfzQFqAvNdmWPspGS?si=Ndn7U0dRQRuVmTaJ58nZUw"><img src="images/pencil.png"><p>Songs</p></a>
+                    <a href="https://open.spotify.com/artist/25tISYfzQFqAvNdmWPspGS?si=Ndn7U0dRQRuVmTaJ58nZUw"><p>Songs</p></a>
                     <br>
-                    <a href="https://open.spotify.com/playlist/2FtmG7KHD0XMLyg2umUush?si=Y-BCH5jGTGi8AnVGuabWHg&pi=u-GrIQPG-OSvyk&nd=1&dlsi=b7f4619e3ac9487a"><img class="inlineImage" src="images/smiling-computer.png"><p>Production</p></a>
+                    <a href="https://open.spotify.com/playlist/2FtmG7KHD0XMLyg2umUush?si=Y-BCH5jGTGi8AnVGuabWHg&pi=u-GrIQPG-OSvyk&nd=1&dlsi=b7f4619e3ac9487a"><p>Production</p></a>
                     <br>
-                    <a href="portal.html"><img src="images/magnifying-glass.png"><p>Portal</p></a>
+                    <a href="portal.html"><p>Portal</p></a>
                 </div>
             </div>
 
@@ -60,21 +43,12 @@
                     &nbsp; <p style="font-size: medium; margin: 0;">contact.me</p>
                 </div>
                 <div class="windowContent">
-                <a href="mailto: maxhelgemo@gmail.com"><img src="images/mail.png"></a> 
-                <a href="https://www.instagram.com/maxhelgemo/"><img src="images/instagram.png"></a>
+                <a href="mailto: maxhelgemo@gmail.com"><img src="images/mail.png"></a>
             </div>
         </div>
-
-            <img src="images/spray-sun.png" style="
-            max-width: 5rem;
-            max-height: fit-content;
-            z-index: -2;
-            position: absolute;
-            left: 1rem;
-            top: 1rem;">
         </div>
 
-        <footer><p style="font-size: medium;">© Max Helgemo 2024</p></footer>
+        <footer><p style="font-size: medium;" id="copyright"></p></footer>
 
         <script src="init.js"></script>
     </body>
