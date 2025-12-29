@@ -41,6 +41,12 @@ body {
     overflow-x: hidden;
 }
 
+/* Portal page body - allow full height scrolling */
+body:has(.image-stack) {
+    height: auto;
+    min-height: 100vh;
+}
+
 h1 {
     font-family: "Terminal";
     font-size: large;
@@ -203,6 +209,16 @@ footer {
     min-width: 200px;
 }
 
+/* Songs page window positioning */
+#songs-window {
+    display: block;
+    position: relative;
+    top: 5rem;
+    left: 5rem;
+    width: fit-content;
+    min-width: 200px;
+}
+
 /* Mobile responsive styles */
 @media (max-width: 768px) {
     #production-window {
@@ -211,7 +227,64 @@ footer {
         min-width: 150px;
     }
     
+    #songs-window {
+        top: 2rem;
+        left: 2rem;
+        min-width: 150px;
+    }
+    
     .window {
         max-width: calc(100vw - 2rem);
+    }
+}
+
+/* Portal page image stack */
+.image-stack {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    min-height: 100vh;
+    gap: 0;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 0;
+}
+
+.stacked-image {
+    width: auto;
+    height: auto;
+    max-width: 50%;
+    max-height: 100vh;
+    object-fit: contain;
+    display: block;
+}
+
+/* Portal page - allow scrolling on mobile */
+body:has(.image-stack) {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Mobile: stack images vertically */
+@media (max-width: 768px) {
+    body:has(.image-stack) {
+        height: auto;
+        min-height: auto;
+    }
+    
+    .image-stack {
+        flex-direction: column;
+        align-items: center;
+        min-height: auto;
+        padding-top: 0;
+    }
+    
+    .stacked-image {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: none;
+        object-fit: contain;
+        display: block;
     }
 }

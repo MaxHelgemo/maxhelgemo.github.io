@@ -3,14 +3,10 @@ var $draggable = $('.draggable').draggabilly({
   handle: '.handle',
 });
 
-// Update copyright date
+// Update copyright date - fixed to 12/29/25
 const copyrightEl = document.getElementById('copyright');
 if (copyrightEl) {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const year = String(now.getFullYear()).slice(-2);
-    copyrightEl.textContent = `${month}/${day}/${year} ©`;
+    copyrightEl.textContent = '12/29/25 ©';
 }
 
 //ANIMATION
