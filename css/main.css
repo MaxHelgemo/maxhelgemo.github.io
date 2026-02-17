@@ -288,3 +288,54 @@ body:has(.image-stack) {
         display: block;
     }
 }
+
+/* Portal page: before/after gallery — date only, no framing */
+body:has(.portal-main) {
+    min-height: 100vh;
+    position: relative;
+}
+
+.portal-main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+    min-height: calc(100vh - 4rem);
+    padding-bottom: 5rem;
+}
+
+.portal-pair {
+    margin-bottom: 2rem;
+}
+
+.portal-date {
+    display: block;
+    font-family: "Terminal";
+    font-size: 1rem;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 0.35rem;
+}
+
+.portal-pair-images {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.portal-pair-images img {
+    display: block;
+    width: 100%;
+    vertical-align: top;
+}
+
+.portal-empty {
+    font-family: "Terminal";
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    .portal-pair-images {
+        grid-template-columns: 1fr;
+    }
+}
