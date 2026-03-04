@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>artifacts — maxhelgemo</title>
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+        <link rel="icon" type="img/png" href="images/favicon.png">
+        <style>
+            body { margin: 0; overflow: hidden; }
+            canvas { display: block; }
+            #ui {
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                z-index: 10;
+                pointer-events: none;
+                user-select: none;
+            }
+            #ui a { pointer-events: all; }
+            #back {
+                font-family: "Terminal", monospace;
+                font-size: medium;
+                color: #000;
+                text-decoration: none;
+                opacity: 0.45;
+                display: block;
+                margin-bottom: 0.4rem;
+            }
+            #back:hover { opacity: 1; }
+            #page-title {
+                font-family: "Terminal", monospace;
+                font-size: large;
+                display: block;
+                margin-bottom: 0.3rem;
+            }
+            #hint {
+                font-family: "Terminal", monospace;
+                font-size: small;
+                opacity: 0.35;
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="ui">
+            <a href="index.html" id="back">← back</a>
+            <span id="page-title">artifacts</span>
+            <span id="hint">click · drag · scroll</span>
+        </div>
+        <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.167.0/build/three.module.min.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.0/examples/jsm/"
+            }
+        }
+        </script>
+        <script type="module" src="things.js"></script>
+    </body>
+</html>
