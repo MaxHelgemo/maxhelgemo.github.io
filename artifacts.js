@@ -41,8 +41,8 @@ controls.maxDistance = 20;
 //     'things/cup.glb',
 // ];
 const THINGS = [
-    'things/9_26_2024.glb',
-    'things/5_28_2024.glb',
+    'artifacts/9_26_2024.glb',
+    'artifacts/5_28_2024.glb',
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
