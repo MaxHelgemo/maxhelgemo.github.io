@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>how to get your data — pinch</title>
+<style>
+@font-face {
+  font-family: "Terminal";
+  src: url('terminal-grotesque.ttf');
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #f8f6f5;
+  font-family: "Terminal", 'Courier New', Courier, monospace;
+  color: #000;
+  min-height: 100vh;
+}
+
+#bar {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0 1rem; height: 2rem;
+  background: #f8f6f5; border-bottom: 2px groove #ccc;
+  position: sticky; top: 0; z-index: 10;
+}
+#back {
+  font-size: 15px; color: #000; text-decoration: none; opacity: 0.45;
+}
+#back:hover { opacity: 1; }
+#bar-title { font-size: 15px; opacity: 0.7; text-transform: lowercase; }
+
+#main {
+  padding: 2rem 1.5rem 5rem;
+  max-width: 460px;
+}
+
+.step {
+  margin-bottom: 2.5rem;
+}
+.step-label {
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em;
+  opacity: 0.4; margin-bottom: 0.5rem; display: block;
+}
+.step-caption {
+  font-size: 16px; color: #222; line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+.step-img {
+  width: 100%; display: block;
+  border: 2px groove #aaa; box-shadow: 3px 3px #000;
+}
+
+.note {
+  font-size: 15px; color: #555; line-height: 1.7;
+  border-left: 3px solid #e16704;
+  padding: 10px 14px;
+  margin-top: 2rem;
+}
+</style>
+</head>
+<body>
+
+<div id="bar">
+  <a href="pinch.html" id="back">← back</a>
+  <span id="bar-title">how to get your data</span>
+</div>
+
+<div id="main">
+
+  <div class="step">
+    <span class="step-label">step 1</span>
+    <p class="step-caption">Open Instagram and tap the menu icon (≡) in the top right corner of your profile.</p>
+    <img class="step-img" src="download%20help/1.jpg" alt="tap the menu icon">
+  </div>
+
+  <div class="step">
+    <span class="step-label">step 2</span>
+    <p class="step-caption">Go to Settings and activity, then tap Accounts Center.</p>
+    <img class="step-img" src="download%20help/2.jpg" alt="tap Accounts Center">
+  </div>
+
+  <div class="step">
+    <span class="step-label">step 3</span>
+    <p class="step-caption">Tap your Instagram profile.</p>
+    <img class="step-img" src="download%20help/3.jpg" alt="tap your profile">
+  </div>
+
+  <div class="step">
+    <span class="step-label">step 4</span>
+    <p class="step-caption">Tap Your information and permissions.</p>
+    <img class="step-img" src="download%20help/4.jpg" alt="your information and permissions">
+  </div>
+
+  <div class="step">
+    <span class="step-label">step 5</span>
+    <p class="step-caption">Tap Export your information.</p>
+    <img class="step-img" src="download%20help/5.jpg" alt="export your information">
+  </div>
+
+  <div class="step">
+    <span class="step-label">step 6</span>
+    <p class="step-caption">Tap Create export.</p>
+    <img class="step-img" src="download%20help/6.jpg" alt="create export">
+  </div>
+
+  <div class="step">
+    <span class="step-label">step 7</span>
+    <p class="step-caption">Tap Export to device.</p>
+    <img class="step-img" src="download%20help/7.jpg" alt="export to device">
+  </div>
+
+  <div class="step">
+    <span class="step-label">step 8</span>
+    <p class="step-caption">Make sure date range is set to All time and format is HTML. Then tap Start export — Instagram will notify you by email when it's ready.</p>
+    <img class="step-img" src="download%20help/8.jpg" alt="start export">
+  </div>
+
+  <div class="note">
+    Once you get the email, download the zip file to your phone and come back here to load it in. That's it.
+  </div>
+
+</div>
+</body>
+</html>

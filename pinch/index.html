@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>pinch</title>
+<script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js/dist/zip-full.min.js"></script>
+<style>
+@font-face {
+  font-family: "Terminal";
+  src: url('terminal-grotesque.ttf');
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: #04020e; color: #ddd4c8;
+  font-family: "Terminal", 'Courier New', Courier, monospace;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none; user-select: none;
+}
+
+/* ── Canvas ── */
+#space-canvas {
+  position: fixed; inset: 0; width: 100%; height: 100%; display: block;
+  touch-action: none;
+}
+
+/* ── Drop Zone ── */
+#drop-zone {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  background: #f8f6f5;
+  overflow: hidden;
+  padding: 24px;
+  transition: opacity 0.4s ease;
+}
+#drop-zone.hidden { opacity: 0; pointer-events: none; }
+#welcome-block {
+  width: min(320px, calc(100vw - 48px));
+}
+#welcome-title {
+  font-size: 16px; font-weight: normal; color: #000;
+  letter-spacing: 0.04em; margin-bottom: 12px;
+}
+#welcome-body p {
+  font-family: "Terminal", 'Courier New', Courier, monospace;
+  font-size: 14px; color: #333; line-height: 1.6;
+  margin-bottom: 10px; display: block; margin-left: 0; margin-right: 0;
+  letter-spacing: 0.01em; vertical-align: unset;
+}
+#welcome-sig {
+  font-size: 14px; color: #000; margin-top: 2px;
+  display: block; margin-left: 0;
+}
+.drop-ring {
+  width: min(320px, calc(100vw - 48px)); cursor: pointer;
+  border: 4px ridge #aaa; box-shadow: 4px 4px #000;
+  background: #efe3d1;
+  transition: box-shadow 0.1s, border-color 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.drop-ring:active { box-shadow: none; transform: translate(4px, 4px); }
+.drop-ring-bar {
+  position: relative;
+  display: flex; align-items: stretch;
+  background: #f8f6f5; border-bottom: 2px groove #aaa;
+}
+.drop-ring-bar-close {
+  width: 28px; background: #e16704; color: #000;
+  border: none; border-right: 2px groove #aaa;
+  cursor: pointer; font-size: 14px;
+  font-family: "Terminal", 'Courier New', Courier, monospace;
+  flex-shrink: 0;
+}
+.drop-ring-bar-title {
+  position: absolute; left: 0; right: 0;
+  top: 50%; transform: translateY(-50%);
+  text-align: center; font-size: 12px;
+  letter-spacing: 0.08em; color: #000;
+  pointer-events: none;
+}
+.drop-inner { text-align: center; padding: 20px 24px; }
+.drop-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.5; }
+.drop-title { font-size: 15px; letter-spacing: 0.08em; text-transform: lowercase; margin-bottom: 4px; color: #000; }
+.drop-sub { font-size: 12px; color: #444; letter-spacing: 0.05em; }
+.drop-hint { font-size: 11px; color: #888; letter-spacing: 0.07em; }
+#file-input { display: none; }
+
+/* ── Loading bar ── */
+#loading-overlay {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+  background: #f8f6f5; pointer-events: none; opacity: 0;
+  transition: opacity 0.2s;
+}
+#loading-overlay.visible { opacity: 1; pointer-events: all; }
+#loading-bar-wrap {
+  width: 260px; height: 18px; background: #efe3d1;
+  border: 2px groove #aaa; overflow: hidden;
+}
+#loading-bar { height: 100%; width: 0%; background: #e16704; transition: width 0.2s; }
+#loading-text { font-size: 11px; color: #333; letter-spacing: 0.08em; }
+
+/* ── HUD ── */
+#hud {
+  position: fixed; inset: 0; pointer-events: none; z-index: 20;
+  display: none;
+}
+#hud.visible { display: block; }
+#hud-username {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: calc(14px + env(safe-area-inset-left, 0px));
+  font-size: 12px; color: rgba(221,212,200,0.5);
+  letter-spacing: 0.06em; pointer-events: none;
+}
+#load-more-btn {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: calc(10px + env(safe-area-inset-right, 0px));
+  background: none; color: #ddd4c8;
+  border: 2px ridge #555; box-shadow: 2px 2px #000;
+  font-family: "Terminal", 'Courier New', Courier, monospace;
+  font-size: 10px; letter-spacing: 0.04em;
+  width: auto; height: 34px; padding: 0 10px;
+  cursor: pointer; pointer-events: all;
+  display: flex; align-items: center; justify-content: center;
+  transition: box-shadow 0.1s, color 0.1s;
+  white-space: nowrap;
+}
+#load-more-btn:active { box-shadow: none; transform: translate(2px, 2px); }
+#load-more-input { display: none; }
+
+/* ── Detail Panel ── */
+#detail-panel {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 82vh;
+  background: #1a1410; border-top: 3px ridge #555;
+  z-index: 50;
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.23,1,0.32,1);
+  will-change: transform;
+}
+#detail-panel.open { transform: translateY(0); }
+
+#detail-bar {
+  display: flex; align-items: center;
+  height: 38px; flex-shrink: 0;
+  border-bottom: 2px groove #333;
+  padding: 0 12px;
+  background: #120f0c;
+}
+#detail-close {
+  background: none; border: none; color: #e16704;
+  font-family: "Terminal", 'Courier New', Courier, monospace;
+  font-size: 18px; cursor: pointer; padding: 4px 8px 4px 0;
+  line-height: 1; pointer-events: all;
+  flex-shrink: 0;
+}
+#detail-bar-date {
+  flex: 1; text-align: center; font-size: 10px;
+  color: #666; letter-spacing: 0.06em;
+}
+#detail-type-badge {
+  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 2px 7px; border: 1px solid currentColor; flex-shrink: 0;
+}
+
+#detail-media-area {
+  width: 100%; flex-shrink: 0;
+  max-height: 46vh;
+  background: #0a0806;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  aspect-ratio: 1;
+}
+#detail-media-area img, #detail-media-area video {
+  max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+}
+.media-placeholder {
+  color: #333; font-size: 11px; letter-spacing: 0.08em;
+}
+#media-multi-nav {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+}
+.media-nav-btn {
+  background: rgba(26,20,16,0.85); color: #ddd4c8;
+  border: 1px ridge #555; width: 28px; height: 28px;
+  font-family: "Terminal", 'Courier New', Courier, monospace;
+  font-size: 14px; cursor: pointer; pointer-events: all;
+  display: flex; align-items: center; justify-content: center;
+}
+.media-nav-btn:disabled { opacity: 0.2; }
+#media-counter { font-size: 10px; color: rgba(221,212,200,0.7); }
+
+#detail-scroll {
+  flex: 1; overflow-y: auto; padding: 12px 16px;
+  -webkit-overflow-scrolling: touch;
+}
+#detail-caption {
+  font-size: 13px; color: #bbb; line-height: 1.7;
+  font-style: italic; white-space: pre-wrap; word-break: break-word;
+}
+
+#post-nav {
+  display: flex; justify-content: space-between;
+  padding: calc(10px + env(safe-area-inset-bottom, 0px)) 16px 10px;
+  border-top: 1px groove #333; background: #120f0c; flex-shrink: 0;
+}
+.post-nav-btn {
+  background: none; color: #888;
+  border: 1px solid #333;
+  font-family: "Terminal", 'Courier New', Courier, monospace;
+  font-size: 11px; padding: 6px 14px; cursor: pointer;
+  letter-spacing: 0.05em; pointer-events: all;
+  transition: color 0.1s, border-color 0.1s;
+}
+.post-nav-btn:not(:disabled):active { color: #e16704; border-color: #e16704; }
+.post-nav-btn:disabled { opacity: 0.2; }
+
+/* ── Fullscreen overlay ── */
+#fullscreen-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.96);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+  touch-action: none;
+}
+#fullscreen-overlay.open { opacity: 1; pointer-events: all; }
+#fullscreen-img {
+  max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+  touch-action: none;
+}
+
+/* ── Bottom-right HUD buttons ── */
+#journey-fwd, #journey-back, #rec-btn {
+  position: absolute;
+  bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+  background: none; color: #ddd4c8;
+  border: 2px ridge #555; box-shadow: 2px 2px #000;
+  font-family: "Terminal", 'Courier New', Courier, monospace;
+  font-size: 15px; width: 34px; height: 34px;
+  cursor: pointer; pointer-events: all;
+  display: flex; align-items: center; justify-content: center;
+  transition: box-shadow 0.1s, color 0.1s, border-color 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+#journey-fwd  { right: calc(10px + env(safe-area-inset-right, 0px)); }
+#journey-back { right: calc(50px + env(safe-area-inset-right, 0px)); }
+#rec-btn      { right: calc(90px + env(safe-area-inset-right, 0px)); }
+#journey-fwd.active, #journey-back.active { color: #e16704; border-color: #e16704; }
+#journey-fwd:active, #journey-back:active, #rec-btn:active { box-shadow: none; transform: translate(2px, 2px); }
+#rec-btn .rec-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: currentColor; flex-shrink: 0;
+}
+#rec-btn .rec-stop {
+  display: none; width: 11px; height: 11px;
+  background: currentColor; flex-shrink: 0;
+}
+#rec-btn.recording { color: #e03030; border-color: #e03030; animation: rec-pulse 1.2s ease-in-out infinite; }
+#rec-btn.recording .rec-dot { display: none; }
+#rec-btn.recording .rec-stop { display: block; }
+@keyframes rec-pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+</style>
+</head>
+<body>
+
+<canvas id="space-canvas"></canvas>
+
+<div id="drop-zone">
+  <div id="welcome-block">
+    <div id="welcome-title">pinch — archive explorer</div>
+    <div id="welcome-body">
+      <p>Hi. This page lets you explore your Instagram pictures and videos in a different way. Only slightly tricky part is getting your data export, but <a href="help.html" style="color:#000; text-decoration: underline;">here are instructions</a> to do that.</p>
+      <p>After you have that as a zip in your downloads you should be able to load it in at the bottom here easily and get to floating around.</p>
+      <p>Also should note.. your data never leaves your device or is uploaded anywhere. This is just a page that reads the zip file on your device. Pretty cool.</p>
+      <p id="welcome-sig">&lt;3 Max</p>
+    </div>
+  </div>
+  <div class="drop-ring" id="drop-ring">
+    <div class="drop-ring-bar">
+      <button class="drop-ring-bar-close" onclick="event.stopPropagation()">×</button>
+      <span class="drop-ring-bar-title">pinch</span>
+    </div>
+    <div class="drop-inner">
+      <div class="drop-icon">◎</div>
+      <div class="drop-title">load your archive</div>
+      <div class="drop-sub">instagram export zip</div>
+    </div>
+  </div>
+  <input type="file" id="file-input" accept=".zip">
+  <p class="drop-hint">tap to choose file</p>
+</div>
+
+<div id="loading-overlay">
+  <div id="loading-text">reading...</div>
+  <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
+</div>
+
+<div id="hud">
+  <div id="hud-username"></div>
+  <button id="load-more-btn" title="load another zip part">+ add zip</button>
+  <input type="file" id="load-more-input" accept=".zip">
+  <button id="journey-back" title="drift to past">◀</button>
+  <button id="journey-fwd" title="drift to present">▶</button>
+  <button id="rec-btn" title="record video"><span class="rec-dot"></span><span class="rec-stop"></span></button>
+</div>
+
+<div id="fullscreen-overlay">
+  <img id="fullscreen-img" alt="">
+</div>
+
+<div id="detail-panel">
+  <div id="detail-bar">
+    <button id="detail-close">✕</button>
+    <div id="detail-bar-date"></div>
+    <div id="detail-type-badge"></div>
+  </div>
+  <div id="detail-media-area">
+    <div class="media-placeholder" id="media-placeholder">···</div>
+    <div id="media-multi-nav">
+      <button class="media-nav-btn" id="media-prev">‹</button>
+      <span id="media-counter"></span>
+      <button class="media-nav-btn" id="media-next">›</button>
+    </div>
+  </div>
+  <div id="detail-scroll">
+    <div id="detail-caption"></div>
+  </div>
+  <div id="post-nav">
+    <button class="post-nav-btn" id="post-prev">← older</button>
+    <button class="post-nav-btn" id="post-next">newer →</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────
+// CONSTANTS
+// ─────────────────────────────────────
+const TYPE_COLORS = {
+  posts:    '#f5c77e',
+  stories:  '#90caf9',
+  archived: '#ce93d8',
+  reels:    '#80deea',
+};
+const MONTHS = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+const SPACE_LOAD_MAX = 4;
+const MAX_IMG_DRAWS = 30;
+const BLOB_CACHE_MAX = 80;
+const JOURNEY_SPEED = 4; // cam.z units per frame (~60fps → ~45s full traverse)
+
+// ─────────────────────────────────────
+// STATE
+// ─────────────────────────────────────
+let allPosts = [];
+let username = '';
+let primaryEntries = null;
+let primaryPrefixes = [];
+let extraEntriesList = [];
+
+const cam = { x: 0, y: 0, z: -1000 };
+let seaMinT = 0, seaMaxT = 1;
+let dirty = true;
+
+const imageElCache = new Map();
+const blobCache = new Map();
+let spaceLoadQueue = [];
+let spaceLoadActive = 0;
+
+let spaceStars = null;
+let spaceStarCanvas = null, spaceStarCanvasW = 0, spaceStarCanvasH = 0;
+
+let projected = []; // updated each frame for hit testing
+
+let selectedPost = null;
+let selectedPostIndex = -1;
+let currentMediaIndex = 0;
+let currentBlobURLs = [];
+let journeyActive = false;
+let journeyDir = 1; // 1 = fwd (past→present, cam.z decreasing), -1 = back (present→past, cam.z increasing)
+
+
+// ─────────────────────────────────────
+// DOM
+// ─────────────────────────────────────
+const canvas      = document.getElementById('space-canvas');
+const ctx         = canvas.getContext('2d');
+const dropZone    = document.getElementById('drop-zone');
+const fileInput   = document.getElementById('file-input');
+const loadingOvl  = document.getElementById('loading-overlay');
+const loadingBar  = document.getElementById('loading-bar');
+const loadingText = document.getElementById('loading-text');
+const hud              = document.getElementById('hud');
+const detailPanel      = document.getElementById('detail-panel');
+const fullscreenOverlay = document.getElementById('fullscreen-overlay');
+const fullscreenImg    = document.getElementById('fullscreen-img');
+
+// ─────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────
+function seededRand(seed) {
+  const x = Math.sin(seed + 1) * 43758.5453123;
+  return x - Math.floor(x);
+}
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function decodeHTMLEntities(str) {
+  if (!str) return '';
+  return str
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&nbsp;/g, ' ')
+    .replace(/&#039;/g, "'").replace(/&ldquo;/g, '\u201c').replace(/&rdquo;/g, '\u201d')
+    .replace(/&lsquo;/g, '\u2018').replace(/&rsquo;/g, '\u2019')
+    .replace(/&hellip;/g, '…').replace(/&mdash;/g, '—').replace(/&ndash;/g, '–');
+}
+
+function parseInstagramDate(str) {
+  if (!str) return null;
+  str = str.trim();
+  const m = str.match(/^(\w{3})\s+(\d{1,2}),\s+(\d{4})\s+(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+  if (!m) return null;
+  const [, mon, day, year, hr, min, ampm] = m;
+  let hour = parseInt(hr, 10);
+  if (ampm.toLowerCase() === 'pm' && hour !== 12) hour += 12;
+  if (ampm.toLowerCase() === 'am' && hour === 12) hour = 0;
+  const d = new Date(parseInt(year), MONTHS[mon] ?? 0, parseInt(day), hour, parseInt(min, 10));
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  return d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric', hour:'numeric', minute:'2-digit' });
+}
+
+function setLoading(pct, msg) {
+  loadingBar.style.width = pct + '%';
+  if (msg) loadingText.textContent = msg;
+}
+
+// ─────────────────────────────────────
+// ZIP HELPERS
+// ─────────────────────────────────────
+function findPrefixes(keys) {
+  const all = [...keys];
+  const prefixes = new Set();
+  for (const k of all) {
+    if (k.endsWith('your_instagram_activity/media/stories.html'))
+      prefixes.add(k.slice(0, k.length - 'your_instagram_activity/media/stories.html'.length));
+    else if (k.endsWith('your_instagram_activity/media/posts_1.html'))
+      prefixes.add(k.slice(0, k.length - 'your_instagram_activity/media/posts_1.html'.length));
+  }
+  if (!prefixes.size) for (const k of all) {
+    const i = k.indexOf('your_instagram_activity/');
+    if (i >= 0) { prefixes.add(k.slice(0, i)); break; }
+  }
+  if (!prefixes.size) for (const k of all) {
+    const m = k.match(/^(.+\/)media\/(?:stories|posts|archived_posts|reels)\//);
+    if (m) prefixes.add(m[1]);
+  }
+  return [...prefixes];
+}
+
+async function readEntryText(entryMap, path) {
+  const e = entryMap.get(path);
+  if (!e) return null;
+  try { return await e.getData(new zip.TextWriter()); } catch { return null; }
+}
+
+async function blobFromZipEntry(entry) {
+  const blob = await entry.getData(new zip.BlobWriter());
+  return URL.createObjectURL(blob);
+}
+
+async function makeBlobURL(relPath) {
+  if (primaryEntries) {
+    for (const pfx of primaryPrefixes) {
+      const e = primaryEntries.get(pfx + relPath);
+      if (e) try { return await blobFromZipEntry(e); } catch {}
+    }
+  }
+  for (const em of extraEntriesList) {
+    for (const pfx of findPrefixes(em.keys())) {
+      const e = em.get(pfx + relPath);
+      if (e) try { return await blobFromZipEntry(e); } catch {}
+    }
+  }
+  return null;
+}
+
+// ─────────────────────────────────────
+// HTML PARSING
+// ─────────────────────────────────────
+function parseHTMLFile(html, type) {
+  const posts = [];
+  const DIVIDER = 'class="pam _3-95 _2ph- _a6-g uiBoxWhite noborder"';
+  const blocks = html.split(DIVIDER);
+  for (let i = 1; i < blocks.length; i++) {
+    const block = blocks[i];
+    let caption = '';
+    const h2m = block.match(/<h2[^>]*>([\s\S]*?)<\/h2>/i);
+    if (h2m) caption = decodeHTMLEntities(h2m[1].replace(/<[^>]+>/g, '').trim());
+    const mediaSrcs = [];
+    const imgRe = /<img\s[^>]*src="([^"]+)"/gi;
+    let im;
+    while ((im = imgRe.exec(block)) !== null) mediaSrcs.push({ src: im[1], isVideo: false });
+    const vidRe = /<video\s[^>]*src="([^"]+)"/gi;
+    let vm;
+    while ((vm = vidRe.exec(block)) !== null) mediaSrcs.push({ src: vm[1], isVideo: true });
+    const dateM = block.match(/class="[^"]*_a6-o[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+    const dateStr = dateM ? dateM[1].replace(/<[^>]+>/g, '').trim() : '';
+    const date = parseInstagramDate(dateStr);
+    if (!date && mediaSrcs.length === 0) continue;
+    posts.push({ type, caption, mediaSrcs, date, dateStr });
+  }
+  return posts;
+}
+
+async function parsePersonalInfo(entryMap, prefix) {
+  const html = await readEntryText(entryMap, prefix + 'personal_information/personal_information/personal_information.html');
+  if (!html) return;
+  const unm = html.match(/Username<\/div><div><div>([^<]+)<\/div>/) ||
+              html.match(/Username<div><div>([^<]+)<\/div>/);
+  if (unm) username = decodeHTMLEntities(unm[1].trim());
+}
+
+// ─────────────────────────────────────
+// 3D LAYOUT
+// ─────────────────────────────────────
+function computeLayout() {
+  const dated = allPosts.filter(p => p.date);
+  if (!dated.length) return;
+  const minT = dated[0].date.getTime();
+  const maxT = dated[dated.length - 1].date.getTime();
+  const span = Math.max(1, maxT - minT);
+  seaMinT = minT; seaMaxT = maxT;
+  let sumX = 0, sumY = 0;
+  for (let i = 0; i < allPosts.length; i++) {
+    const p = allPosts[i];
+    const t = p.date ? (p.date.getTime() - minT) / span : i / allPosts.length;
+    p.sx3d = (seededRand(i * 13)     - 0.5) * 2800; // narrower X for portrait screen
+    p.sy3d = (seededRand(i * 13 + 1) - 0.5) * 4000; // taller Y to fill portrait height
+    p.sz3d = (1 - t) * 10000;
+    sumX += p.sx3d;
+    sumY += p.sy3d;
+  }
+  // Subtract centroid so the cloud is always centered on the initial camera
+  const cx = sumX / allPosts.length;
+  const cy = sumY / allPosts.length;
+  for (const p of allPosts) { p.sx3d -= cx; p.sy3d -= cy; }
+}
+
+function project(px, py, pz, W, H) {
+  const dz = pz - cam.z;
+  if (dz <= 1) return null;
+  const fov = Math.min(W, H) * 0.8;
+  return {
+    sx: W/2 + ((px - cam.x) / dz) * fov,
+    sy: H/2 - ((py - cam.y) / dz) * fov,
+    depth: dz,
+    scale: fov / dz
+  };
+}
+
+// ─────────────────────────────────────
+// IMAGE LOADING
+// ─────────────────────────────────────
+function getCachedBlob(relPath) { return blobCache.get(relPath) || null; }
+function setCachedBlob(relPath, blob) {
+  if (blobCache.size >= BLOB_CACHE_MAX) {
+    const oldest = blobCache.keys().next().value;
+    blobCache.delete(oldest);
+  }
+  blobCache.set(relPath, blob);
+}
+
+async function extractBlob(relPath) {
+  const ext = relPath.split('.').pop().toLowerCase();
+  const mime = ext === 'mp4' ? 'video/mp4' : ext === 'mov' ? 'video/quicktime' :
+               ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
+               ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : '';
+  const writer = () => mime ? new zip.BlobWriter(mime) : new zip.BlobWriter();
+  if (primaryEntries) {
+    for (const pfx of primaryPrefixes) {
+      const e = primaryEntries.get(pfx + relPath);
+      if (e) try { return await e.getData(writer()); } catch {}
+    }
+  }
+  for (const em of extraEntriesList) {
+    for (const pfx of findPrefixes(em.keys())) {
+      const e = em.get(pfx + relPath);
+      if (e) try { return await e.getData(writer()); } catch {}
+    }
+  }
+  return null;
+}
+
+function pumpQueue() {
+  while (spaceLoadActive < SPACE_LOAD_MAX && spaceLoadQueue.length > 0) {
+    const relPath = spaceLoadQueue.shift();
+    if (imageElCache.get(relPath) !== 'queued') continue;
+    imageElCache.set(relPath, 'loading');
+    spaceLoadActive++;
+    (async () => {
+      try {
+        let blob = getCachedBlob(relPath);
+        if (!blob) { blob = await extractBlob(relPath); if (blob) setCachedBlob(relPath, blob); }
+        if (blob) {
+          if (imageElCache.get(relPath) === 'loading') {
+            const bitmap = await createImageBitmap(blob);
+            if (imageElCache.get(relPath) === 'loading') imageElCache.set(relPath, bitmap);
+            else bitmap.close(); // evicted while loading — free immediately
+          }
+        } else { imageElCache.set(relPath, 'failed'); }
+      } catch { if (imageElCache.get(relPath) === 'loading') imageElCache.set(relPath, 'failed'); }
+      spaceLoadActive--;
+      dirty = true;
+      pumpQueue();
+    })();
+  }
+}
+
+// ─────────────────────────────────────
+// STARS
+// ─────────────────────────────────────
+function buildStars() {
+  spaceStars = [];
+  for (let i = 0; i < 300; i++) {
+    spaceStars.push({
+      x: seededRand(i * 17),
+      y: seededRand(i * 17 + 1),
+      r: seededRand(i * 17 + 2) * 1.2 + 0.2,
+      a: seededRand(i * 17 + 3) * 0.5 + 0.15,
+    });
+  }
+  spaceStarCanvas = null;
+}
+
+function drawStarBg(W, H) {
+  if (!spaceStars) buildStars();
+  if (!spaceStarCanvas || spaceStarCanvasW !== W || spaceStarCanvasH !== H) {
+    spaceStarCanvas = document.createElement('canvas');
+    spaceStarCanvas.width = W; spaceStarCanvas.height = H;
+    spaceStarCanvasW = W; spaceStarCanvasH = H;
+    const sc = spaceStarCanvas.getContext('2d');
+    for (const s of spaceStars) {
+      sc.globalAlpha = s.a;
+      sc.fillStyle = '#ddd4c8';
+      sc.beginPath();
+      sc.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+      sc.fill();
+    }
+  }
+  ctx.drawImage(spaceStarCanvas, 0, 0);
+}
+
+// ─────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────
+function render() {
+  requestAnimationFrame(render);
+  if (journeyActive) {
+    cam.z -= JOURNEY_SPEED * journeyDir;
+    const done = journeyDir === 1 ? cam.z <= -200 : cam.z >= 10500;
+    if (done) {
+      cam.z = journeyDir === 1 ? -200 : 10500;
+      stopJourney();
+    }
+    dirty = true;
+  }
+  if (!dirty) return;
+  dirty = false;
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = canvas.width / dpr;
+  const H = canvas.height / dpr;
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // re-apply every frame — heals context resets
+  ctx.fillStyle = '#04020e';
+  ctx.fillRect(0, 0, W, H);
+  drawStarBg(W, H);
+
+  if (!allPosts.length) return;
+
+  // Project all posts
+  const items = [];
+  for (let i = 0; i < allPosts.length; i++) {
+    const p = allPosts[i];
+    if (p.sx3d == null) continue;
+    const proj = project(p.sx3d, p.sy3d, p.sz3d, W, H);
+    if (!proj) continue;
+    const imgW = Math.min(160, proj.scale * 260);
+    if (imgW < 1) continue;
+    items.push({ p, idx: i, sx: proj.sx, sy: proj.sy, depth: proj.depth, imgW });
+  }
+  items.sort((a, b) => b.depth - a.depth); // back to front
+
+  // Build eligible set (nearest on-screen posts for image loading)
+  const imgEligible = new Set();
+  for (let i = items.length - 1; i >= 0 && imgEligible.size < MAX_IMG_DRAWS; i--) {
+    const { p, imgW, sx, sy } = items[i];
+    if (imgW < 6 || !p._relPath) continue;
+    if (sx < -imgW || sx > W + imgW || sy < -imgW || sy > H + imgW) continue;
+    imgEligible.add(p._relPath);
+  }
+
+  // Evict images no longer eligible
+  for (const [relPath, val] of imageElCache) {
+    if (!imgEligible.has(relPath) && (val instanceof ImageBitmap || val === 'queued')) {
+      if (val instanceof ImageBitmap) val.close(); // free decoded bitmap immediately
+      imageElCache.delete(relPath);
+    }
+  }
+  if (spaceLoadQueue.length > 0)
+    spaceLoadQueue = spaceLoadQueue.filter(path => imgEligible.has(path));
+
+  // Queue eligible unloaded
+  for (const relPath of imgEligible) {
+    if (!imageElCache.has(relPath) && spaceLoadQueue.length < 400) {
+      imageElCache.set(relPath, 'queued');
+      spaceLoadQueue.push(relPath);
+    }
+  }
+  pumpQueue();
+
+  // Draw posts back to front
+  projected = [];
+  ctx.shadowBlur = 0;
+  ctx.textAlign = 'center';
+
+  const NEAR = 100, FAR = 10000;
+
+  for (const { p, idx, sx, sy, depth, imgW } of items) {
+    if (sx < -imgW || sx > W + imgW || sy < -imgW || sy > H + imgW) continue;
+    const col = TYPE_COLORS[p.type] || '#fff';
+    const isSelected = p === selectedPost;
+    const fade = clamp(1 - (depth - NEAR) / (FAR - NEAR), 0, 1);
+    const imgH = imgW * 0.75;
+
+    if (imgW < 6) {
+      ctx.globalAlpha = fade * 0.65;
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.arc(sx, sy, Math.max(0.5, imgW * 0.4), 0, Math.PI * 2);
+      ctx.fill();
+      continue;
+    }
+
+    projected.push({ p, idx, sx, sy, imgW, imgH });
+
+    const cachedEntry = imgEligible.has(p._relPath) ? imageElCache.get(p._relPath) : null;
+    const img = cachedEntry instanceof ImageBitmap ? cachedEntry : null;
+
+    if (img) {
+      ctx.globalAlpha = fade * (isSelected ? 1 : 0.9);
+      ctx.drawImage(img, sx - imgW/2, sy - imgH/2, imgW, imgH);
+      if (isSelected) {
+        ctx.save();
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#e16704';
+        ctx.strokeStyle = '#e16704';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(sx - imgW/2, sy - imgH/2, imgW, imgH);
+        ctx.restore();
+        ctx.shadowBlur = 0;
+      } else {
+        ctx.globalAlpha = fade * 0.25;
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 0.7;
+        ctx.strokeRect(sx - imgW/2, sy - imgH/2, imgW, imgH);
+      }
+    } else {
+      ctx.globalAlpha = fade * 0.15;
+      ctx.fillStyle = col;
+      ctx.fillRect(sx - imgW/2, sy - imgH/2, imgW, imgH);
+      if (isSelected) {
+        ctx.globalAlpha = fade * 0.8;
+        ctx.strokeStyle = '#e16704';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(sx - imgW/2, sy - imgH/2, imgW, imgH);
+      }
+    }
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+
+  drawTimeline(W, H);
+}
+
+function drawTimeline(W, H) {
+  if (seaMaxT <= seaMinT) return;
+  const span = seaMaxT - seaMinT;
+  const t = clamp(1 - cam.z / 10000, 0, 1);
+  const focalDate = new Date(seaMinT + t * span);
+
+  const barW    = Math.round(W * 0.72);
+  const barX    = Math.round((W - barW) / 2);
+  const barY    = H - 44;
+  const markerX = barX + Math.round(t * barW);
+
+  // Date label above the dot
+  const dateStr = focalDate.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+  ctx.font = "13px Terminal, 'Courier New', monospace";
+  ctx.textAlign = 'center';
+  ctx.shadowBlur = 8;
+  ctx.shadowColor = '#04020e';
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#ddd4c8';
+  ctx.fillText(dateStr, markerX, barY - 10);
+
+  // Track
+  ctx.globalAlpha = 0.45;
+  ctx.fillStyle = '#ddd4c8';
+  ctx.fillRect(barX, barY, barW, 3);
+
+  // Filled portion (oldest → current)
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = '#e16704';
+  ctx.fillRect(barX, barY, Math.round(t * barW), 3);
+
+  // Year labels at ends
+  ctx.globalAlpha = 0.55;
+  ctx.font = "11px Terminal, 'Courier New', monospace";
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#ddd4c8';
+  ctx.fillText(new Date(seaMinT).getFullYear(), barX, barY + 16);
+  ctx.textAlign = 'right';
+  ctx.fillText(new Date(seaMaxT).getFullYear(), barX + barW, barY + 16);
+
+  // Orange dot with glow
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#e16704';
+  ctx.shadowBlur = 14;
+  ctx.shadowColor = '#e16704';
+  ctx.beginPath();
+  ctx.arc(markerX, barY + 1, 6, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'center';
+}
+
+// ─────────────────────────────────────
+// HIT TEST
+// ─────────────────────────────────────
+function hitTest(mx, my) {
+  for (let i = projected.length - 1; i >= 0; i--) {
+    const { p, idx, sx, sy, imgW, imgH } = projected[i];
+    if (mx >= sx - imgW/2 && mx <= sx + imgW/2 &&
+        my >= sy - imgH/2 && my <= sy + imgH/2)
+      return { post: p, idx };
+  }
+  return { post: null, idx: -1 };
+}
+
+// ─────────────────────────────────────
+// CANVAS RESIZE
+// ─────────────────────────────────────
+function resizeCanvas() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width  = Math.round(window.innerWidth  * dpr);
+  canvas.height = Math.round(window.innerHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  spaceStarCanvas = null; // invalidate star cache
+  dirty = true;
+}
+
+window.addEventListener('resize', () => { resizeCanvas(); dirty = true; });
+
+// ─────────────────────────────────────
+// DETAIL PANEL
+// ─────────────────────────────────────
+function revokeBlobURLs() {
+  for (const u of currentBlobURLs) URL.revokeObjectURL(u);
+  currentBlobURLs = [];
+}
+
+async function openPost(post, idx) {
+  revokeBlobURLs();
+  selectedPost = post;
+  selectedPostIndex = idx;
+  currentMediaIndex = 0;
+  dirty = true;
+
+  document.getElementById('detail-bar-date').textContent = formatDate(post.date) || post.dateStr;
+  const badge = document.getElementById('detail-type-badge');
+  badge.textContent = post.type;
+  badge.style.color = TYPE_COLORS[post.type] || '#fff';
+  badge.style.borderColor = TYPE_COLORS[post.type] || '#fff';
+  document.getElementById('detail-caption').textContent = post.caption || '';
+  document.getElementById('post-prev').disabled = idx <= 0;
+  document.getElementById('post-next').disabled = idx >= allPosts.length - 1;
+
+  detailPanel.classList.add('open');
+  await loadDetailMedia(post, 0);
+}
+
+async function loadDetailMedia(post, idx) {
+  const area = document.getElementById('detail-media-area');
+  area.querySelectorAll('img,video').forEach(el => el.remove());
+  const placeholder = document.getElementById('media-placeholder');
+  placeholder.textContent = '···';
+  placeholder.style.display = '';
+
+  const total = post.mediaSrcs.length;
+  document.getElementById('media-counter').textContent = total > 1 ? `${idx + 1} / ${total}` : '';
+  document.getElementById('media-prev').disabled = idx <= 0;
+  document.getElementById('media-next').disabled = idx >= total - 1;
+  const multiNav = document.getElementById('media-multi-nav');
+  multiNav.style.display = total > 1 ? 'flex' : 'none';
+
+  if (!total) { placeholder.textContent = 'no media'; return; }
+  const mediaSrc = post.mediaSrcs[idx];
+  if (!mediaSrc) return;
+
+  const isRemote = mediaSrc.src.startsWith('http');
+  const relSrc = mediaSrc.src.replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\//, '');
+
+  try {
+    let url;
+    if (isRemote) {
+      url = mediaSrc.src;
+    } else {
+      let blob = getCachedBlob(relSrc);
+      if (!blob) { blob = await extractBlob(relSrc); if (blob) setCachedBlob(relSrc, blob); }
+      if (!blob) {
+        placeholder.innerHTML = 'not in this archive<br><span style="font-size:11px;opacity:0.6;">instagram sometimes splits exports into two zips — tap <b>+ add zip</b> (top right) to load the other part</span>';
+        return;
+      }
+      url = URL.createObjectURL(blob);
+      currentBlobURLs.push(url);
+    }
+    placeholder.style.display = 'none';
+    let el;
+    if (mediaSrc.isVideo) {
+      el = document.createElement('video');
+      el.controls = true; el.playsInline = true; el.autoplay = false;
+    } else {
+      el = document.createElement('img');
+    }
+    el.src = url;
+    if (!mediaSrc.isVideo) {
+      el.style.cursor = 'zoom-in';
+      el.addEventListener('click', () => openFullscreen(url));
+    }
+    area.insertBefore(el, multiNav);
+  } catch(e) {
+    placeholder.textContent = 'error'; console.error(e);
+  }
+}
+
+function openFullscreen(src) {
+  fullscreenImg.src = src;
+  fullscreenOverlay.classList.add('open');
+}
+function closeFullscreen() {
+  fullscreenOverlay.classList.remove('open');
+  fullscreenImg.src = '';
+}
+fullscreenOverlay.addEventListener('click', closeFullscreen);
+fullscreenOverlay.addEventListener('touchend', e => {
+  e.preventDefault();
+  closeFullscreen();
+}, { passive: false });
+
+function closePanel() {
+  detailPanel.classList.remove('open');
+  revokeBlobURLs();
+  const area = document.getElementById('detail-media-area');
+  area.querySelectorAll('img,video').forEach(el => el.remove());
+  document.getElementById('media-placeholder').textContent = '···';
+  document.getElementById('media-placeholder').style.display = '';
+  selectedPost = null;
+  selectedPostIndex = -1;
+  dirty = true;
+}
+
+// ─────────────────────────────────────
+// TOUCH CONTROLS
+// ─────────────────────────────────────
+let touchState = {
+  touches: [],
+  lastPinchDist: 0,
+  dragStart: null,
+  camStart: null,
+  hasDragged: false,
+  timelineDrag: false,
+  panelTouchStartY: 0,
+  panelScrolling: false,
+};
+
+function scrubTimeline(mx) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = canvas.width / dpr;
+  const H = canvas.height / dpr;
+  const barW = Math.round(W * 0.72);
+  const barX = Math.round((W - barW) / 2);
+  const t = clamp((mx - barX) / barW, 0, 1);
+  cam.z = clamp((1 - t) * 10000, -1500, 11000);
+  dirty = true;
+}
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  // Any touch on canvas stops the journey (user is taking control)
+  if (journeyActive) stopJourney();
+  touchState.touches = Array.from(e.touches);
+  touchState.hasDragged = false;
+  touchState.timelineDrag = false;
+  if (touchState.touches.length === 1) {
+    const t0 = touchState.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const H = canvas.height / dpr;
+    const my = t0.clientY - rect.top;
+    const mx = t0.clientX - rect.left;
+    // Timeline zone: bottom 70px
+    if (my > H - 70) {
+      touchState.timelineDrag = true;
+      touchState.hasDragged = true;
+      scrubTimeline(mx);
+    } else {
+      touchState.dragStart = { x: t0.clientX, y: t0.clientY };
+      touchState.camStart  = { x: cam.x, y: cam.y, z: cam.z };
+    }
+  } else if (touchState.touches.length === 2) {
+    touchState.lastPinchDist = Math.hypot(
+      touchState.touches[0].clientX - touchState.touches[1].clientX,
+      touchState.touches[0].clientY - touchState.touches[1].clientY
+    );
+    touchState.dragStart = null;
+    touchState.timelineDrag = false;
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  touchState.touches = Array.from(e.touches);
+  if (touchState.timelineDrag && touchState.touches.length === 1) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = touchState.touches[0].clientX - rect.left;
+    scrubTimeline(mx);
+  } else if (touchState.touches.length === 1 && touchState.dragStart) {
+    const dx = touchState.touches[0].clientX - touchState.dragStart.x;
+    const dy = touchState.touches[0].clientY - touchState.dragStart.y;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) touchState.hasDragged = true;
+    cam.x = clamp(touchState.camStart.x - dx * 4, -3000, 3000);
+    cam.y = clamp(touchState.camStart.y + dy * 4, -4500, 4500);
+    dirty = true;
+  } else if (touchState.touches.length === 2) {
+    const dist = Math.hypot(
+      touchState.touches[0].clientX - touchState.touches[1].clientX,
+      touchState.touches[0].clientY - touchState.touches[1].clientY
+    );
+    const scale = dist / (touchState.lastPinchDist || dist);
+    touchState.lastPinchDist = dist;
+    touchState.hasDragged = true;
+    cam.z = clamp(cam.z + (scale - 1) * 1200, -1500, 11000);
+    dirty = true;
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  e.preventDefault();
+  if (!touchState.hasDragged && e.changedTouches.length === 1) {
+    const t = e.changedTouches[0];
+    const rect = canvas.getBoundingClientRect();
+    const mx = t.clientX - rect.left;
+    const my = t.clientY - rect.top;
+    if (detailPanel.classList.contains('open')) {
+      closePanel();
+    } else {
+      const { post, idx } = hitTest(mx, my);
+      if (post) openPost(post, idx);
+    }
+  }
+  touchState.touches = [];
+  touchState.dragStart = null;
+  touchState.timelineDrag = false;
+}, { passive: false });
+
+// Swipe down on detail panel to dismiss
+detailPanel.addEventListener('touchstart', e => {
+  touchState.panelTouchStartY = e.touches[0].clientY;
+  touchState.panelScrolling = false;
+}, { passive: true });
+
+detailPanel.addEventListener('touchmove', e => {
+  const dy = e.touches[0].clientY - touchState.panelTouchStartY;
+  // if scrolling upward inside, mark as scroll, not swipe
+  const scroll = document.getElementById('detail-scroll');
+  if (scroll.scrollTop > 0 && dy < 0) { touchState.panelScrolling = true; }
+}, { passive: true });
+
+detailPanel.addEventListener('touchend', e => {
+  if (touchState.panelScrolling) return;
+  const dy = e.changedTouches[0].clientY - touchState.panelTouchStartY;
+  if (dy > 60) closePanel();
+}, { passive: true });
+
+// ─────────────────────────────────────
+// MOUSE EVENTS (desktop testing)
+// ─────────────────────────────────────
+if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  let mouseDrag = null;
+  canvas.addEventListener('mousedown', e => {
+    if (journeyActive) stopJourney();
+    mouseDrag = { startX: e.clientX, startY: e.clientY, camX: cam.x, camY: cam.y, dragged: false };
+  });
+  window.addEventListener('mousemove', e => {
+    if (!mouseDrag) return;
+    const dx = e.clientX - mouseDrag.startX;
+    const dy = e.clientY - mouseDrag.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) mouseDrag.dragged = true;
+    cam.x = clamp(mouseDrag.camX - dx * 4, -3000, 3000);
+    cam.y = clamp(mouseDrag.camY + dy * 4, -4500, 4500);
+    dirty = true;
+  });
+  window.addEventListener('mouseup', e => {
+    if (!mouseDrag) return;
+    if (!mouseDrag.dragged) {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      if (detailPanel.classList.contains('open')) {
+        closePanel();
+      } else {
+        const { post, idx } = hitTest(mx, my);
+        if (post) openPost(post, idx);
+      }
+    }
+    mouseDrag = null;
+  });
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    cam.z = clamp(cam.z - e.deltaY * 8, -1500, 11000);
+    dirty = true;
+  }, { passive: false });
+}
+
+// ─────────────────────────────────────
+// DETAIL PANEL EVENTS
+// ─────────────────────────────────────
+document.getElementById('detail-close').addEventListener('click', closePanel);
+
+document.getElementById('media-prev').addEventListener('click', () => {
+  if (selectedPost && currentMediaIndex > 0) {
+    currentMediaIndex--;
+    loadDetailMedia(selectedPost, currentMediaIndex);
+  }
+});
+document.getElementById('media-next').addEventListener('click', () => {
+  if (selectedPost && currentMediaIndex < selectedPost.mediaSrcs.length - 1) {
+    currentMediaIndex++;
+    loadDetailMedia(selectedPost, currentMediaIndex);
+  }
+});
+document.getElementById('post-prev').addEventListener('click', () => {
+  if (selectedPostIndex > 0) openPost(allPosts[selectedPostIndex - 1], selectedPostIndex - 1);
+});
+document.getElementById('post-next').addEventListener('click', () => {
+  if (selectedPostIndex < allPosts.length - 1) openPost(allPosts[selectedPostIndex + 1], selectedPostIndex + 1);
+});
+
+// ─────────────────────────────────────
+// RECORD
+// ─────────────────────────────────────
+let mediaRecorder = null;
+let recordedChunks = [];
+
+function getSupportedMimeType() {
+  const types = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+  for (const t of types) {
+    try { if (MediaRecorder.isTypeSupported(t)) return t; } catch(e) {}
+  }
+  return '';
+}
+
+function startRecording() {
+  if (!canvas.captureStream) { alert('Screen recording not supported in this browser.'); return; }
+  const mimeType = getSupportedMimeType();
+  const stream = canvas.captureStream(30);
+  mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+  recordedChunks = [];
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recordedChunks, { type: mimeType || 'video/webm' });
+    const ext  = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `pinch.${ext}`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    recordedChunks = [];
+  };
+  mediaRecorder.start();
+  document.getElementById('rec-btn').classList.add('recording');
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  mediaRecorder = null;
+  document.getElementById('rec-btn').classList.remove('recording');
+}
+
+document.getElementById('rec-btn').addEventListener('click', () => {
+  if (!allPosts.length) return;
+  if (mediaRecorder && mediaRecorder.state === 'recording') stopRecording();
+  else startRecording();
+});
+
+// ─────────────────────────────────────
+// JOURNEY
+// ─────────────────────────────────────
+function stopJourney() {
+  journeyActive = false;
+  document.getElementById('journey-fwd').classList.remove('active');
+  document.getElementById('journey-fwd').textContent = '▶';
+  document.getElementById('journey-back').classList.remove('active');
+  document.getElementById('journey-back').textContent = '◀';
+}
+function startJourney(dir) {
+  if (!allPosts.length) return;
+  if (journeyActive && journeyDir === dir) { stopJourney(); return; }
+  stopJourney();
+  journeyDir = dir;
+  // Wrap to the far end if already near the destination
+  if (dir === 1  && cam.z < 500)  cam.z = 10500; // near newest → jump to oldest
+  if (dir === -1 && cam.z > 9500) cam.z = -200;  // near oldest → jump to newest
+  journeyActive = true;
+  const btn = document.getElementById(dir === 1 ? 'journey-fwd' : 'journey-back');
+  btn.classList.add('active');
+  btn.textContent = '■';
+  dirty = true;
+}
+document.getElementById('journey-fwd').addEventListener('click',  () => startJourney(1));
+document.getElementById('journey-back').addEventListener('click', () => startJourney(-1));
+
+// ─────────────────────────────────────
+// LOAD ANOTHER ZIP
+// ─────────────────────────────────────
+document.getElementById('load-more-btn').addEventListener('click', () => {
+  document.getElementById('load-more-input').click();
+});
+document.getElementById('load-more-input').addEventListener('change', async e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const reader = new zip.ZipReader(new zip.BlobReader(f));
+    const entries = await reader.getEntries();
+    await reader.close();
+    const em = new Map(entries.map(en => [en.filename, en]));
+    extraEntriesList.push(em);
+    const btn = document.getElementById('load-more-btn');
+    btn.textContent = '✓ loaded';
+    setTimeout(() => { btn.textContent = '+ add zip'; }, 2000);
+  } catch(err) { console.error(err); }
+  e.target.value = '';
+});
+
+// ─────────────────────────────────────
+// LOADING
+// ─────────────────────────────────────
+async function finishLoading() {
+  allPosts.sort((a, b) => (a.date?.getTime() ?? 0) - (b.date?.getTime() ?? 0));
+
+  // Pre-cache relPath
+  for (const p of allPosts) {
+    const src = p.mediaSrcs[0];
+    p._relPath = (src && !src.isVideo && !src.src.startsWith('http'))
+      ? src.src.replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\//, '')
+      : null;
+  }
+
+  setLoading(90, 'mapping space...');
+  computeLayout();
+  buildStars();
+
+  setLoading(100, 'ready');
+  setTimeout(() => {
+    loadingOvl.classList.remove('visible');
+    hud.classList.add('visible');
+    document.getElementById('hud-username').textContent = username ? '@' + username : '';
+    resizeCanvas();
+    dirty = true;
+  }, 250);
+}
+
+async function loadZip(file) {
+  dropZone.classList.add('hidden');
+  loadingOvl.classList.add('visible');
+  setLoading(2, 'opening zip...');
+
+  try {
+    setLoading(5, `reading index… (${(file.size / 1e6).toFixed(0)} MB)`);
+    const reader = new zip.ZipReader(new zip.BlobReader(file));
+    const entries = await reader.getEntries();
+    await reader.close();
+
+    primaryEntries = new Map(entries.map(e => [e.filename, e]));
+    primaryPrefixes = findPrefixes(primaryEntries.keys());
+    const prefix0 = primaryPrefixes[0] || '';
+
+    setLoading(8, 'reading profile...');
+    await parsePersonalInfo(primaryEntries, prefix0);
+
+    const sources = [
+      { path: 'your_instagram_activity/media/posts_1.html',        type: 'posts' },
+      { path: 'your_instagram_activity/media/posts_2.html',        type: 'posts' },
+      { path: 'your_instagram_activity/media/posts_3.html',        type: 'posts' },
+      { path: 'your_instagram_activity/media/stories.html',        type: 'stories' },
+      { path: 'your_instagram_activity/media/archived_posts.html', type: 'archived' },
+      { path: 'your_instagram_activity/media/reels.html',          type: 'reels' },
+    ];
+
+    const totalWork = primaryPrefixes.length * sources.length;
+    let loaded = 0;
+    for (const pfx of primaryPrefixes) {
+      for (const src of sources) {
+        const html = await readEntryText(primaryEntries, pfx + src.path);
+        if (html) allPosts = allPosts.concat(parseHTMLFile(html, src.type));
+        loaded++;
+        setLoading(10 + (loaded / totalWork) * 75, `parsing ${src.type}...`);
+      }
+    }
+
+    if (!allPosts.length) {
+      loadingText.textContent = 'no posts found in this zip';
+      return;
+    }
+
+    await finishLoading();
+
+  } catch (err) {
+    console.error(err);
+    loadingText.textContent = 'error: ' + (err.message || String(err));
+  }
+}
+
+// ─────────────────────────────────────
+// DROP ZONE
+// ─────────────────────────────────────
+document.getElementById('drop-ring').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) loadZip(e.target.files[0]);
+});
+
+// ─────────────────────────────────────
+// INIT
+// ─────────────────────────────────────
+resizeCanvas();
+requestAnimationFrame(render);
+</script>
+</body>
+</html>
