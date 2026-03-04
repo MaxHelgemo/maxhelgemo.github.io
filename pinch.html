@@ -40,17 +40,17 @@ html, body {
   width: min(320px, calc(100vw - 48px));
 }
 #welcome-title {
-  font-size: 16px; font-weight: normal; color: #000;
+  font-size: 18px; font-weight: normal; color: #000;
   letter-spacing: 0.04em; margin-bottom: 12px;
 }
 #welcome-body p {
   font-family: "Terminal", 'Courier New', Courier, monospace;
-  font-size: 14px; color: #333; line-height: 1.6;
+  font-size: 16px; color: #333; line-height: 1.6;
   margin-bottom: 10px; display: block; margin-left: 0; margin-right: 0;
   letter-spacing: 0.01em; vertical-align: unset;
 }
 #welcome-sig {
-  font-size: 14px; color: #000; margin-top: 2px;
+  font-size: 16px; color: #000; margin-top: 2px;
   display: block; margin-left: 0;
 }
 .drop-ring {
@@ -76,15 +76,15 @@ html, body {
 .drop-ring-bar-title {
   position: absolute; left: 0; right: 0;
   top: 50%; transform: translateY(-50%);
-  text-align: center; font-size: 12px;
+  text-align: center; font-size: 14px;
   letter-spacing: 0.08em; color: #000;
   pointer-events: none;
 }
 .drop-inner { text-align: center; padding: 20px 24px; }
 .drop-icon { font-size: 32px; margin-bottom: 10px; opacity: 0.5; }
-.drop-title { font-size: 15px; letter-spacing: 0.08em; text-transform: lowercase; margin-bottom: 4px; color: #000; }
-.drop-sub { font-size: 12px; color: #444; letter-spacing: 0.05em; }
-.drop-hint { font-size: 11px; color: #888; letter-spacing: 0.07em; }
+.drop-title { font-size: 17px; letter-spacing: 0.08em; text-transform: lowercase; margin-bottom: 4px; color: #000; }
+.drop-sub { font-size: 14px; color: #444; letter-spacing: 0.05em; }
+.drop-hint { font-size: 13px; color: #888; letter-spacing: 0.07em; }
 #file-input { display: none; }
 
 /* ── Loading bar ── */
@@ -101,7 +101,7 @@ html, body {
   border: 2px groove #aaa; overflow: hidden;
 }
 #loading-bar { height: 100%; width: 0%; background: #e16704; transition: width 0.2s; }
-#loading-text { font-size: 11px; color: #333; letter-spacing: 0.08em; }
+#loading-text { font-size: 13px; color: #333; letter-spacing: 0.08em; }
 
 /* ── HUD ── */
 #hud {
@@ -113,7 +113,7 @@ html, body {
   position: absolute;
   top: calc(12px + env(safe-area-inset-top, 0px));
   left: calc(14px + env(safe-area-inset-left, 0px));
-  font-size: 12px; color: rgba(221,212,200,0.5);
+  font-size: 14px; color: rgba(221,212,200,0.5);
   letter-spacing: 0.06em; pointer-events: none;
 }
 #load-more-btn {
@@ -123,7 +123,7 @@ html, body {
   background: none; color: #ddd4c8;
   border: 2px ridge #555; box-shadow: 2px 2px #000;
   font-family: "Terminal", 'Courier New', Courier, monospace;
-  font-size: 10px; letter-spacing: 0.04em;
+  font-size: 12px; letter-spacing: 0.04em;
   width: auto; height: 34px; padding: 0 10px;
   cursor: pointer; pointer-events: all;
   display: flex; align-items: center; justify-content: center;
@@ -161,11 +161,11 @@ html, body {
   flex-shrink: 0;
 }
 #detail-bar-date {
-  flex: 1; text-align: center; font-size: 10px;
+  flex: 1; text-align: center; font-size: 12px;
   color: #666; letter-spacing: 0.06em;
 }
 #detail-type-badge {
-  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
   padding: 2px 7px; border: 1px solid currentColor; flex-shrink: 0;
 }
 
@@ -181,7 +181,7 @@ html, body {
   max-width: 100%; max-height: 100%; object-fit: contain; display: block;
 }
 .media-placeholder {
-  color: #333; font-size: 11px; letter-spacing: 0.08em;
+  color: #333; font-size: 13px; letter-spacing: 0.08em;
 }
 #media-multi-nav {
   position: absolute; bottom: 0; left: 0; right: 0;
@@ -197,14 +197,14 @@ html, body {
   display: flex; align-items: center; justify-content: center;
 }
 .media-nav-btn:disabled { opacity: 0.2; }
-#media-counter { font-size: 10px; color: rgba(221,212,200,0.7); }
+#media-counter { font-size: 12px; color: rgba(221,212,200,0.7); }
 
 #detail-scroll {
   flex: 1; overflow-y: auto; padding: 12px 16px;
   -webkit-overflow-scrolling: touch;
 }
 #detail-caption {
-  font-size: 13px; color: #bbb; line-height: 1.7;
+  font-size: 15px; color: #bbb; line-height: 1.7;
   font-style: italic; white-space: pre-wrap; word-break: break-word;
 }
 
@@ -217,7 +217,7 @@ html, body {
   background: none; color: #888;
   border: 1px solid #333;
   font-family: "Terminal", 'Courier New', Courier, monospace;
-  font-size: 11px; padding: 6px 14px; cursor: pointer;
+  font-size: 13px; padding: 6px 14px; cursor: pointer;
   letter-spacing: 0.05em; pointer-events: all;
   transition: color 0.1s, border-color 0.1s;
 }
@@ -811,7 +811,7 @@ function drawTimeline(W, H) {
 
   // Date label above the dot
   const dateStr = focalDate.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
-  ctx.font = "13px Terminal, 'Courier New', monospace";
+  ctx.font = "15px Terminal, 'Courier New', monospace";
   ctx.textAlign = 'center';
   ctx.shadowBlur = 8;
   ctx.shadowColor = '#04020e';
@@ -831,7 +831,7 @@ function drawTimeline(W, H) {
 
   // Year labels at ends
   ctx.globalAlpha = 0.55;
-  ctx.font = "11px Terminal, 'Courier New', monospace";
+  ctx.font = "13px Terminal, 'Courier New', monospace";
   ctx.textAlign = 'left';
   ctx.fillStyle = '#ddd4c8';
   ctx.fillText(new Date(seaMinT).getFullYear(), barX, barY + 16);
