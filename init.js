@@ -3,10 +3,10 @@ var $draggable = $('.draggable').draggabilly({
   handle: '.handle',
 });
 
-// Update copyright date - fixed to 12/29/25
+// Update copyright date - fixed to 5/21/26
 const copyrightEl = document.getElementById('copyright');
 if (copyrightEl) {
-    copyrightEl.textContent = '12/29/25 ©';
+    copyrightEl.textContent = '5/21/26 ©';
 }
 
 //ANIMATION
