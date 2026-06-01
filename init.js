@@ -21,134 +21,89 @@ if (BTLDR.svg) {
     // Animation control variables
     let ang = 0;
     let autoRotate = true;
-    let isDragging = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    let svgX = 50;
-    let svgY = 50;
-    
-    // Initialize SVG position
-    const rect = BTLDR.svg.getBoundingClientRect();
-    svgX = (rect.left + rect.width / 2) / window.innerWidth * 100;
-    svgY = (rect.top + rect.height / 2) / window.innerHeight * 100;
     let zoom = 1;
-    const applyZoom = () => {
+    let panX = 0; // in viewBox/content units
+    let panY = 0;
+
+    const applyView = () => {
         const size = 400 / zoom;
         const offset = (400 - size) / 2;
-        BTLDR.svg.setAttribute('viewBox', `${offset} ${offset} ${size} ${size}`);
+        BTLDR.svg.setAttribute('viewBox', `${offset + panX} ${offset + panY} ${size} ${size}`);
     };
-    BTLDR.svg.style.left = svgX + '%';
-    BTLDR.svg.style.top = svgY + '%';
+    applyView();
     BTLDR.svg.style.transform = 'translate(-50%, -50%)';
-    
-    // Drag functionality
-    BTLDR.svg.addEventListener('mousedown', (e) => {
-        isDragging = true;
+
+    // Unified pointer input: 1 pointer pans + rotates, 2 pointers pinch-zoom.
+    // Works for mouse, touch, and pen on every modern browser.
+    const pointers = new Map();
+    let dragRef = null;
+    let pinchRef = null;
+
+    // Convert a screen-pixel delta to viewBox-unit delta. Slice scaling uses the
+    // larger viewport dimension, so we mirror that here.
+    const unitsPerPixel = () => (400 / zoom) / Math.max(window.innerWidth, window.innerHeight);
+
+    BTLDR.svg.addEventListener('pointerdown', (e) => {
+        BTLDR.svg.setPointerCapture(e.pointerId);
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
         autoRotate = false;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
-        const rect = BTLDR.svg.getBoundingClientRect();
-        svgX = (rect.left + rect.width / 2) / window.innerWidth * 100;
-        svgY = (rect.top + rect.height / 2) / window.innerHeight * 100;
-    });
-    
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            const deltaX = e.clientX - dragStartX;
-            const deltaY = e.clientY - dragStartY;
-            
-            // Update position (both X and Y)
-            svgX += (deltaX / window.innerWidth) * 100;
-            svgY += (deltaY / window.innerHeight) * 100;
-            svgX = Math.max(0, Math.min(100, svgX));
-            svgY = Math.max(0, Math.min(100, svgY));
-            
-            BTLDR.svg.style.left = svgX + '%';
-            BTLDR.svg.style.top = svgY + '%';
-            
-            dragStartX = e.clientX;
-            dragStartY = e.clientY;
-            
-            // Rotate based on horizontal drag
-            ang += deltaX * 0.005;
+        if (pointers.size === 1) {
+            const p = pointers.get(e.pointerId);
+            dragRef = { x: p.x, y: p.y };
+            pinchRef = null;
+        } else if (pointers.size === 2) {
+            dragRef = null;
+            const vals = Array.from(pointers.values());
+            pinchRef = { dist: Math.hypot(vals[0].x - vals[1].x, vals[0].y - vals[1].y), zoom };
         }
     });
-    
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-        autoRotate = true;
+
+    BTLDR.svg.addEventListener('pointermove', (e) => {
+        if (!pointers.has(e.pointerId)) return;
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pointers.size === 1 && dragRef) {
+            const p = pointers.get(e.pointerId);
+            const dx = p.x - dragRef.x;
+            const dy = p.y - dragRef.y;
+            const upp = unitsPerPixel();
+            panX -= dx * upp;
+            panY -= dy * upp;
+            ang += dx * 0.005;
+            applyView();
+            dragRef = { x: p.x, y: p.y };
+        } else if (pointers.size === 2 && pinchRef) {
+            const vals = Array.from(pointers.values());
+            const d = Math.hypot(vals[0].x - vals[1].x, vals[0].y - vals[1].y);
+            if (pinchRef.dist > 0) {
+                zoom = Math.max(0.2, Math.min(20, pinchRef.zoom * (d / pinchRef.dist)));
+                applyView();
+            }
+        }
     });
-    
-    // Wheel zoom (via viewBox so it stays crisp)
+
+    const endPointer = (e) => {
+        pointers.delete(e.pointerId);
+        if (pointers.size === 0) {
+            dragRef = null;
+            pinchRef = null;
+            autoRotate = true;
+        } else if (pointers.size === 1) {
+            const remaining = Array.from(pointers.values())[0];
+            dragRef = { x: remaining.x, y: remaining.y };
+            pinchRef = null;
+        }
+    };
+    BTLDR.svg.addEventListener('pointerup', endPointer);
+    BTLDR.svg.addEventListener('pointercancel', endPointer);
+    BTLDR.svg.addEventListener('pointerleave', endPointer);
+
+    // Wheel zoom (desktop only; touch uses pinch above)
     BTLDR.svg.addEventListener('wheel', (e) => {
         e.preventDefault();
         zoom *= e.deltaY < 0 ? 1.1 : 0.9;
         zoom = Math.max(0.2, Math.min(20, zoom));
-        applyZoom();
+        applyView();
     }, { passive: false });
-
-    // Touch: one finger drags/rotates, two fingers pinch-zoom
-    const activeTouches = new Map();
-    let pinchStartDist = 0;
-    let pinchStartZoom = 1;
-
-    BTLDR.svg.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        for (const t of e.changedTouches) {
-            activeTouches.set(t.identifier, { x: t.clientX, y: t.clientY });
-        }
-        if (activeTouches.size === 1) {
-            const [t] = activeTouches.values();
-            isDragging = true;
-            autoRotate = false;
-            dragStartX = t.x;
-            dragStartY = t.y;
-            const rect = BTLDR.svg.getBoundingClientRect();
-            svgX = (rect.left + rect.width / 2) / window.innerWidth * 100;
-            svgY = (rect.top + rect.height / 2) / window.innerHeight * 100;
-        } else if (activeTouches.size === 2) {
-            isDragging = false;
-            const [a, b] = [...activeTouches.values()];
-            pinchStartDist = Math.hypot(a.x - b.x, a.y - b.y);
-            pinchStartZoom = zoom;
-        }
-    }, { passive: false });
-
-    BTLDR.svg.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        for (const t of e.changedTouches) {
-            if (activeTouches.has(t.identifier)) {
-                activeTouches.set(t.identifier, { x: t.clientX, y: t.clientY });
-            }
-        }
-        if (activeTouches.size === 1 && isDragging) {
-            const [t] = activeTouches.values();
-            const deltaX = t.x - dragStartX;
-            const deltaY = t.y - dragStartY;
-            svgX += (deltaX / window.innerWidth) * 100;
-            svgY += (deltaY / window.innerHeight) * 100;
-            svgX = Math.max(0, Math.min(100, svgX));
-            svgY = Math.max(0, Math.min(100, svgY));
-            BTLDR.svg.style.left = svgX + '%';
-            BTLDR.svg.style.top = svgY + '%';
-            dragStartX = t.x;
-            dragStartY = t.y;
-            ang += deltaX * 0.005;
-        } else if (activeTouches.size === 2 && pinchStartDist > 0) {
-            const [a, b] = [...activeTouches.values()];
-            const dist = Math.hypot(a.x - b.x, a.y - b.y);
-            zoom = Math.max(0.2, Math.min(20, pinchStartZoom * (dist / pinchStartDist)));
-            applyZoom();
-        }
-    }, { passive: false });
-
-    const endTouch = (e) => {
-        for (const t of e.changedTouches) activeTouches.delete(t.identifier);
-        if (activeTouches.size === 0) { isDragging = false; autoRotate = true; }
-        if (activeTouches.size < 2) pinchStartDist = 0;
-    };
-    BTLDR.svg.addEventListener('touchend', endTouch);
-    BTLDR.svg.addEventListener('touchcancel', endTouch);
     
     function D(){
         BTLDR.svg.innerHTML="";
