@@ -184,6 +184,7 @@ footer {
     background-color: transparent;
     cursor: grab;
     user-select: none;
+    touch-action: none;
 }
 
 #animation-svg:active {
