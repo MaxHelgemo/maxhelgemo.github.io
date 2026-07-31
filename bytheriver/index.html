@@ -1,107 +1,35 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>By the River</title>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta property="og:title" content="By the River"/>
-<meta property="og:type" content="music.song"/>
-<meta property="og:url" content="https://maxhelgemo.com/bytheriver/"/>
-<meta property="og:image" content="https://maxhelgemo.com/bytheriver/cover.jpg"/>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-
-<style>
-  :root {
-    --bg: #000000;
-    --fg: #ffffff;
-  }
-  body.light {
-    --bg: #ffffff;
-    --fg: #000000;
-  }
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--bg);
-    min-height: 100vh;
-  }
-  .page {
-    min-height: 100vh;
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    box-sizing: border-box;
-  }
-  .title {
-    font-family: "VT323", ui-monospace, monospace;
-    font-size: 42px;
-    letter-spacing: 0.06em;
-    color: var(--fg);
-    margin-bottom: 26px;
-  }
-  .cover {
-    width: min(78vw, 380px);
-    height: auto;
-    display: block;
-  }
-  .links {
-    margin-top: 26px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-  }
-  .links a {
-    font-family: "VT323", ui-monospace, monospace;
-    font-size: 28px;
-    letter-spacing: 0.04em;
-    color: var(--fg);
-    text-decoration: none;
-  }
-  .links a:hover {
-    text-decoration: underline;
-  }
-  .home {
-    position: fixed;
-    left: 20px;
-    bottom: 20px;
-    font-family: "VT323", ui-monospace, monospace;
-    font-size: 18px;
-    letter-spacing: 0.08em;
-    color: var(--fg);
-    opacity: 0.55;
-    text-decoration: none;
-  }
-  .home:hover {
-    opacity: 1;
-    text-decoration: underline;
-  }
-</style>
+<link rel="icon" type="img/png" href="../images/favicon.png">
+<meta property="og:title" content="By the River">
+<meta property="og:type" content="music.song">
+<meta property="og:url" content="https://maxhelgemo.com/bytheriver/">
+<meta property="og:image" content="https://maxhelgemo.com/bytheriver/cover.jpg">
 </head>
 <body>
 
-<div class="page">
-  <!-- <div class="title">BY THE RIVER</div> -->
-  <img class="cover" src="cover.jpg" alt="By the River cover"/>
-  <div class="links">
-    <!-- INTERIM: artist pages until the song drops — swap to song URLs on release day -->
-    <a href="https://music.apple.com/us/artist/max-helgemo/1263711602">APPLE MUSIC</a>
-    <a href="https://open.spotify.com/artist/25tISYfzQFqAvNdmWPspGS?si=7FNlWWGdR4GlYKcq-1IveA">SPOTIFY</a>
-    <a href="https://tidal.com/artist/8966157/u">TIDAL</a>
-  </div>
-</div>
-<a class="home" href="/">HOME</a>
-
-<script>
-  // local preview helper: append ?light to compare white-with-black-text
-  if (location.search.includes('light')) document.body.classList.add('light');
-</script>
+<center>
+<br><br>
+<table>
+<tr><td><img src="cover.jpg" width="300" alt="By the River cover"></td></tr>
+<tr><td>
+<font size="7">
+<p>
+<!-- INTERIM: artist pages until the song drops — swap to song URLs on release day -->
+<a href="https://music.apple.com/us/artist/max-helgemo/1263711602">Apple Music</a><br>
+<a href="https://open.spotify.com/artist/25tISYfzQFqAvNdmWPspGS?si=7FNlWWGdR4GlYKcq-1IveA">Spotify</a><br>
+<a href="https://tidal.com/artist/8966157/u">Tidal</a>
+</p>
+</font>
+<p><font size="5"><a href="/">home</a></font></p>
+</td></tr>
+</table>
+<br><br>
+</center>
 
 </body>
 </html>
